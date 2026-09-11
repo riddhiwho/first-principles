@@ -1,15 +1,11 @@
 # First Principles
 
-Clear, rigorous explanations of software engineering ideas—built from the underlying constraints instead of memorized rules.
+Software engineering, rebuilt from the constraints up.
 
-This is a growing collection for engineers who want to understand not just *what* a system does, but *why* it has to work that way.
+No folklore. No hand-waving. Just the reasoning that makes the rules make sense.
 
-## System design
+## Start here
 
-- [The CAP Theorem, From First Principles](./topics/system-design/cap-theorem.md) — why “our database is AP” is usually a category error, and what the theorem actually says.
+- [The CAP Theorem, From First Principles](./topics/system-design/cap-theorem.md) — why “our database is AP” is usually wrong, and what CAP actually says.
 
-## What’s coming
-
-More first-principles notes across distributed systems, databases, networking, backend engineering, and software architecture.
-
-If an explanation helps you, consider starring the repository so you can find the next one.
+More notes on distributed systems, databases, networking, and backend engineering as I write them.
