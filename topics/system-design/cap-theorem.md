@@ -1,4 +1,4 @@
-# The CAP Theorem, From First Principles
+# No Cap: The Real CAP Theorem
 
 *Why "our database is AP" is usually a category error — and what's actually true underneath it.*
 
