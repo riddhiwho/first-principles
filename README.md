@@ -6,7 +6,7 @@ This is a growing collection for engineers who want to understand not just *what
 
 ## System design
 
-- [The CAP Theorem, From First Principles](./cap-theorem-from-first-principles.md) — why “our database is AP” is usually a category error, and what the theorem actually says.
+- [The CAP Theorem, From First Principles](./topics/system-design/cap-theorem.md) — why “our database is AP” is usually a category error, and what the theorem actually says.
 
 ## What’s coming
 
