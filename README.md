@@ -6,6 +6,6 @@ No folklore. No hand-waving. Just the reasoning that makes the rules make sense.
 
 ## Start here
 
-- [The CAP Theorem, From First Principles](./topics/system-design/cap-theorem.md) — why “our database is AP” is usually wrong, and what CAP actually says.
+- [No Cap: The Real CAP Theorem](./topics/system-design/cap-theorem.md) — why “our database is AP” is usually wrong, and what CAP actually says.
 
 More notes on distributed systems, databases, networking, and backend engineering as I write them.
