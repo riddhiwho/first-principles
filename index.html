@@ -3,24 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>First Principles — SWE Concepts from the Ground Up</title>
+<title>First Principles — Software Engineering from the ground up</title>
 <style>
 :root {
   --bg: #0c0e14;
   --bg2: #13151f;
   --bg3: #1a1d2b;
-  --bg4: #202333;
   --border: #2a2d3e;
   --text: #dde1f0;
   --muted: #6b7280;
-  --blue: #5b9cf6;
+  --blue: #60a5fa;
   --green: #4ade80;
   --orange: #fb923c;
-  --red: #f87171;
   --purple: #c084fc;
   --yellow: #fbbf24;
-  --cyan: #22d3ee;
-  --sidebar-w: 270px;
+  --teal: #2dd4bf;
+  --sidebar-w: 240px;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
@@ -29,140 +27,243 @@ body {
   color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 15px;
-  line-height: 1.75;
+  line-height: 1.7;
   display: flex;
   min-height: 100vh;
 }
+
+/* ── Sidebar ── */
 #sidebar {
   width: var(--sidebar-w);
   background: var(--bg2);
   border-right: 1px solid var(--border);
   position: fixed; top: 0; left: 0; bottom: 0;
-  overflow-y: auto; padding: 0; z-index: 100;
-  scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+  overflow-y: auto; z-index: 100;
+  display: flex; flex-direction: column;
 }
-.sidebar-head {
-  padding: 22px 20px 18px;
+.sidebar-brand {
+  padding: 24px 20px 20px;
   border-bottom: 1px solid var(--border);
-  background: var(--bg3);
 }
-.sidebar-head h1 { font-size: 15px; font-weight: 700; color: var(--blue); letter-spacing: -.01em; }
-.sidebar-head h1 a { color: inherit; text-decoration: none; }
-.sidebar-head p { font-size: 11.5px; color: var(--muted); margin-top: 3px; }
-.nav-group { padding: 14px 20px 4px; font-size: 10.5px; font-weight: 700; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; }
+.sidebar-brand h1 {
+  font-size: 15px; font-weight: 700; color: var(--blue);
+  display: flex; align-items: center; gap: 8px;
+}
+.sidebar-brand h1::before {
+  content: '○';
+  font-size: 12px;
+  color: var(--blue);
+}
+.sidebar-brand p { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.nav-section { padding: 18px 20px 6px; font-size: 10.5px; font-weight: 700; color: var(--muted); letter-spacing: .07em; text-transform: uppercase; }
 #sidebar nav a {
-  display: block; padding: 5px 20px;
+  display: block; padding: 6px 20px;
   color: var(--muted); text-decoration: none; font-size: 13px;
   border-left: 2px solid transparent; transition: all .12s;
 }
 #sidebar nav a:hover { color: var(--text); background: var(--bg3); }
-#sidebar nav a.current { color: var(--blue); border-left-color: var(--blue); background: rgba(91,156,246,.06); }
-#main { margin-left: var(--sidebar-w); flex: 1; padding: 0 48px 100px; max-width: calc(100vw - var(--sidebar-w)); }
+#sidebar nav a.active { color: var(--blue); border-left-color: var(--blue); }
 
-/* Hero */
-.hero { padding: 56px 0 48px; border-bottom: 1px solid var(--border); margin-bottom: 64px; max-width: 860px; }
-.hero-tag { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--blue); background: rgba(91,156,246,.12); border: 1px solid rgba(91,156,246,.25); border-radius: 4px; padding: 3px 10px; margin-bottom: 20px; }
-.hero h1 { font-size: 44px; font-weight: 800; line-height: 1.1; letter-spacing: -.03em; color: #fff; max-width: 580px; }
-.hero h1 span { color: var(--blue); }
-.hero p { margin-top: 18px; font-size: 17px; color: var(--muted); max-width: 540px; line-height: 1.65; }
-.hero-meta { margin-top: 28px; display: flex; gap: 20px; flex-wrap: wrap; }
-.meta-chip { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
-.meta-chip span { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
-.meta-chip span.g { background: var(--green); }
-.meta-chip span.b { background: var(--blue); }
-.meta-chip span.p { background: var(--purple); }
-.meta-chip span.o { background: var(--orange); }
+/* ── Main ── */
+#main { margin-left: var(--sidebar-w); flex: 1; padding: 0 56px 100px; max-width: calc(100vw - var(--sidebar-w)); }
 
-/* Topic sections */
-.topic-section { max-width: 860px; margin-bottom: 56px; }
-.topic-section-header {
-  font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
-  color: var(--muted); padding-bottom: 12px; border-bottom: 1px solid var(--border); margin-bottom: 18px;
+/* ── Hero ── */
+.hero {
+  padding: 72px 0 56px;
+  border-bottom: 1px solid var(--border);
+  max-width: 780px;
 }
-.topic-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 14px; }
+.hero-tag {
+  display: inline-block; font-size: 11px; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase;
+  color: var(--muted); border: 1px solid var(--border);
+  border-radius: 4px; padding: 4px 12px; margin-bottom: 28px;
+}
+.hero h1 {
+  font-size: 52px; font-weight: 800; line-height: 1.05;
+  letter-spacing: -.03em; color: #fff;
+}
+.hero h1 em { color: var(--blue); font-style: normal; }
+.hero p { margin-top: 20px; font-size: 18px; color: var(--muted); max-width: 520px; line-height: 1.6; }
+.hero-bullets { margin-top: 28px; display: flex; gap: 24px; flex-wrap: wrap; }
+.bullet { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 7px; }
+.bullet::before { content: '●'; font-size: 7px; }
+.bullet.b1::before { color: var(--blue); }
+.bullet.b2::before { color: var(--green); }
+.bullet.b3::before { color: var(--purple); }
+.bullet.b4::before { color: var(--orange); }
 
-/* Topic card */
-.topic-card {
+/* ── Sections ── */
+.articles-section { padding-top: 56px; max-width: 860px; margin-bottom: 56px; }
+.section-label {
+  font-size: 11px; font-weight: 700; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--muted);
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 24px;
+}
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
+
+/* ── Article Card ── */
+.card {
   background: var(--bg2);
   border: 1px solid var(--border);
   border-radius: 10px;
-  padding: 22px 24px;
+  padding: 24px;
+  transition: border-color .15s, transform .15s;
   text-decoration: none;
   display: block;
-  transition: border-color .15s, background .15s;
-  position: relative;
-  overflow: hidden;
 }
-.topic-card::before {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0; height: 2px;
-  background: linear-gradient(90deg, var(--blue), var(--purple));
-  opacity: 0; transition: opacity .15s;
+.card:hover { border-color: var(--blue); transform: translateY(-2px); }
+.card-tag {
+  font-size: 10.5px; font-weight: 700; letter-spacing: .08em;
+  text-transform: uppercase; margin-bottom: 12px;
 }
-.topic-card:hover { border-color: rgba(91,156,246,.4); background: var(--bg3); text-decoration: none; }
-.topic-card:hover::before { opacity: 1; }
-.card-category { font-size: 10.5px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--blue); margin-bottom: 10px; }
-.card-title { font-size: 17px; font-weight: 700; color: #fff; line-height: 1.3; letter-spacing: -.01em; margin-bottom: 8px; }
-.card-desc { font-size: 13px; color: var(--muted); line-height: 1.6; }
-.card-arrow { margin-top: 16px; font-size: 12px; color: var(--blue); }
+.card h3 { font-size: 17px; font-weight: 700; color: #fff; line-height: 1.3; margin-bottom: 10px; }
+.card p { font-size: 13.5px; color: var(--muted); line-height: 1.6; margin-bottom: 16px; }
+.card-link { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 5px; }
+.card-link::after { content: '→'; }
 
-a { color: var(--blue); text-decoration: none; }
-a:hover { text-decoration: underline; }
+/* tag colours by category */
+.tag-system-design { color: var(--blue); }
+.card.system-design:hover { border-color: var(--blue); }
+.card-link.system-design { color: var(--blue); }
 
-::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+.tag-devtools { color: var(--teal); }
+.card.devtools:hover { border-color: var(--teal); }
+.card-link.devtools { color: var(--teal); }
 
+.tag-networking { color: var(--green); }
+.card.networking:hover { border-color: var(--green); }
+.card-link.networking { color: var(--green); }
+
+.tag-databases { color: var(--orange); }
+.card.databases:hover { border-color: var(--orange); }
+.card-link.databases { color: var(--orange); }
+
+/* ── Footer ── */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 36px 0;
+  max-width: 860px;
+  text-align: center;
+}
+footer p { font-size: 13px; color: var(--muted); line-height: 2; }
+
+/* ── Responsive ── */
 @media (max-width: 900px) {
   #sidebar { display: none; }
-  #main { margin-left: 0; max-width: 100%; padding: 0 20px 80px; }
-  .topic-grid { grid-template-columns: 1fr; }
+  #main { margin-left: 0; padding: 0 24px 80px; max-width: 100%; }
+  .hero h1 { font-size: 36px; }
+  .cards { grid-template-columns: 1fr; }
 }
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 </style>
 </head>
 <body>
 
 <aside id="sidebar">
-  <div class="sidebar-head">
-    <h1><a href="index.html">⬡ First Principles</a></h1>
+  <div class="sidebar-brand">
+    <h1>First Principles</h1>
     <p>SWE concepts from the ground up</p>
   </div>
   <nav>
-    <div class="nav-group">System Design</div>
-    <a href="topics/system-design/cap-theorem.html">No Cap: The Real CAP Theorem</a>
+    <div class="nav-section">System Design</div>
+    <a href="cap-theorem.html">No Cap: The Real CAP Theorem</a>
+
+    <div class="nav-section">Devtools</div>
+    <a href="ssh-mastery.html">SSH from First Principles</a>
+
+    <!--
+      HOW TO ADD A NEW ARTICLE TO THE SIDEBAR:
+      1. Add a nav-section div if it's a new category (copy one above)
+      2. Add an <a href="your-file.html">Article Title</a> under it
+      That's it.
+    -->
   </nav>
 </aside>
 
 <main id="main">
+
   <div class="hero">
     <div class="hero-tag">Engineering · From First Principles</div>
-    <h1>Software Engineering<br><span>rebuilt from scratch</span></h1>
+    <h1>Software Engineering<br><em>rebuilt from scratch</em></h1>
     <p>No folklore. No hand-waving. Just the reasoning that makes the rules make sense.</p>
-    <div class="hero-meta">
-      <div class="meta-chip"><span class="b"></span>First principles only</div>
-      <div class="meta-chip"><span class="g"></span>No assumed background</div>
-      <div class="meta-chip"><span class="p"></span>Concrete examples</div>
-      <div class="meta-chip"><span class="o"></span>Nothing hand-waved</div>
+    <div class="hero-bullets">
+      <span class="bullet b1">First principles only</span>
+      <span class="bullet b2">No assumed background</span>
+      <span class="bullet b3">Concrete examples</span>
+      <span class="bullet b4">Nothing hand-waved</span>
     </div>
   </div>
 
-  <div class="topic-section">
-    <div class="topic-section-header">System Design</div>
-    <div class="topic-grid">
-      <a href="topics/system-design/cap-theorem.html" class="topic-card">
-        <div class="card-category">System Design</div>
-        <div class="card-title">No Cap: The Real CAP Theorem</div>
-        <div class="card-desc">Why "our database is AP" is usually a category error — and what's actually true underneath it. A rigorous walkthrough of linearizability, availability, and partition tolerance.</div>
-        <div class="card-arrow">Read article →</div>
+  <!-- ══════════════════════════════════════════
+       SYSTEM DESIGN
+       To add an article: copy a .card block,
+       update href, card-tag class, h3, p text.
+  ══════════════════════════════════════════ -->
+  <div class="articles-section" id="system-design">
+    <div class="section-label">System Design</div>
+    <div class="cards">
+
+      <a href="cap-theorem.html" class="card system-design">
+        <div class="card-tag tag-system-design">System Design</div>
+        <h3>No Cap: The Real CAP Theorem</h3>
+        <p>Why "our database is AP" is usually a category error — and what's actually true underneath it. A rigorous walkthrough of linearizability, availability, and partition tolerance.</p>
+        <span class="card-link system-design">Read article</span>
       </a>
+
     </div>
   </div>
 
-  <div style="border-top:1px solid var(--border);margin-top:20px;padding:40px 0;max-width:860px;text-align:center">
-    <p style="color:var(--muted);font-size:14px">First Principles &mdash; Software engineering, rebuilt from the constraints up.</p>
-    <p style="color:var(--muted);font-size:13px;margin-top:8px">More notes on distributed systems, databases, networking, and backend engineering as they're written.</p>
+  <!-- ══════════════════════════════════════════
+       DEVTOOLS
+  ══════════════════════════════════════════ -->
+  <div class="articles-section" id="devtools">
+    <div class="section-label">Devtools</div>
+    <div class="cards">
+
+      <a href="ssh-mastery.html" class="card devtools">
+        <div class="card-tag tag-devtools">Devtools</div>
+        <h3>SSH from First Principles</h3>
+        <p>How public-key cryptography makes <code style="background:#1a1d2b;padding:1px 5px;border-radius:3px;font-size:12px;color:#fb923c">git push</code> work — asymmetric crypto, the SSH handshake, known_hosts, the agent, config aliases, and running two GitHub identities on one laptop.</p>
+        <span class="card-link devtools">Read article</span>
+      </a>
+
+    </div>
   </div>
+
+  <!--
+    HOW TO ADD A NEW CATEGORY SECTION:
+    Copy the entire articles-section div above.
+    Change:
+      - id="devtools"          → id="your-category"
+      - section-label text     → Your Category Name
+      - nav-section in sidebar → matching label
+    Then add cards inside .cards.
+
+    CARD COLORS — add matching CSS classes:
+    tag-networking / networking  → green
+    tag-databases  / databases   → orange
+    tag-security   / security    → red
+    Or add your own color pair in the <style> block above.
+  -->
+
+  <footer>
+    <p>First Principles — Software engineering, rebuilt from the constraints up.</p>
+    <p>More notes on distributed systems, databases, networking, and backend engineering as they're written.</p>
+  </footer>
+
 </main>
 
+<script>
+// Highlight active sidebar link based on URL
+const current = window.location.pathname.split('/').pop() || 'index.html';
+document.querySelectorAll('#sidebar nav a').forEach(a => {
+  if (a.getAttribute('href') === current) a.classList.add('active');
+});
+</script>
 </body>
 </html>
