@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>No Cap: The Real CAP Theorem — First Principles</title>
+<style>
+:root {
+  --bg: #0c0e14;
+  --bg2: #13151f;
+  --bg3: #1a1d2b;
+  --bg4: #202333;
+  --border: #2a2d3e;
+  --text: #dde1f0;
+  --muted: #6b7280;
+  --blue: #5b9cf6;
+  --green: #4ade80;
+  --orange: #fb923c;
+  --red: #f87171;
+  --purple: #c084fc;
+  --yellow: #fbbf24;
+  --cyan: #22d3ee;
+  --sidebar-w: 270px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 15px;
+  line-height: 1.75;
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Progress bar */
+#progress { position: fixed; top: 0; left: 0; height: 2px; background: linear-gradient(90deg, var(--blue), var(--purple)); z-index: 999; transition: width .1s; pointer-events: none; width: 0; }
+
+/* Sidebar */
+#sidebar {
+  width: var(--sidebar-w);
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  position: fixed; top: 0; left: 0; bottom: 0;
+  overflow-y: auto; padding: 0; z-index: 100;
+  scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+}
+.sidebar-head {
+  padding: 22px 20px 18px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg3);
+  position: sticky; top: 0; z-index: 1;
+}
+.sidebar-head h1 { font-size: 15px; font-weight: 700; color: var(--blue); letter-spacing: -.01em; }
+.sidebar-head h1 a { color: inherit; text-decoration: none; }
+.sidebar-head p { font-size: 11.5px; color: var(--muted); margin-top: 3px; }
+.sidebar-back {
+  display: flex; align-items: center; gap: 6px;
+  padding: 10px 20px;
+  font-size: 12px; color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  text-decoration: none; transition: color .12s;
+}
+.sidebar-back:hover { color: var(--text); text-decoration: none; }
+.nav-group { padding: 14px 20px 4px; font-size: 10.5px; font-weight: 700; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; }
+#sidebar nav a {
+  display: block; padding: 5px 20px;
+  color: var(--muted); text-decoration: none; font-size: 13px;
+  border-left: 2px solid transparent; transition: all .12s;
+  line-height: 1.45;
+}
+#sidebar nav a:hover { color: var(--text); background: var(--bg3); }
+#sidebar nav a.active { color: var(--blue); border-left-color: var(--blue); background: rgba(91,156,246,.06); }
+
+/* Main */
+#main { margin-left: var(--sidebar-w); flex: 1; padding: 0 48px 100px; max-width: calc(100vw - var(--sidebar-w)); }
+
+/* Hero */
+.hero { padding: 56px 0 48px; border-bottom: 1px solid var(--border); margin-bottom: 64px; max-width: 860px; }
+.hero-tag { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--blue); background: rgba(91,156,246,.12); border: 1px solid rgba(91,156,246,.25); border-radius: 4px; padding: 3px 10px; margin-bottom: 20px; }
+.hero h1 { font-size: 40px; font-weight: 800; line-height: 1.1; letter-spacing: -.03em; color: #fff; max-width: 700px; }
+.hero h1 span { color: var(--blue); }
+.hero-sub { margin-top: 16px; font-size: 16px; color: var(--muted); max-width: 580px; line-height: 1.65; font-style: italic; }
+
+/* Sections */
+.sec { max-width: 860px; margin-bottom: 80px; scroll-margin-top: 24px; }
+.sec h2 { font-size: 26px; font-weight: 700; letter-spacing: -.02em; padding-bottom: 14px; border-bottom: 1px solid var(--border); margin-bottom: 20px; color: #fff; }
+.sec-num { color: var(--muted); font-weight: 400; margin-right: 6px; font-size: 22px; }
+.sec h3 { font-size: 18px; font-weight: 650; color: var(--cyan); margin: 34px 0 10px; }
+.sec h4 { font-size: 14.5px; font-weight: 650; color: var(--yellow); margin: 22px 0 8px; }
+.sec p { margin: 12px 0; color: var(--text); }
+.sec ul, .sec ol { margin: 12px 0 12px 24px; }
+.sec li { margin: 5px 0; }
+.sec li p { margin: 2px 0; }
+.sec strong { color: #fff; }
+.sec em { color: var(--text); font-style: italic; }
+hr.divider { border: none; border-top: 1px solid var(--border); margin: 48px 0; }
+
+a { color: var(--blue); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* Inline code */
+code:not(pre code) { background: var(--bg3); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; font-family: 'SF Mono', Consolas, monospace; font-size: 13px; color: var(--orange); }
+
+/* Code blocks */
+.cb { background: #0a0c12; border: 1px solid var(--border); border-radius: 8px; margin: 16px 0; overflow: hidden; }
+.cb-head { background: var(--bg3); padding: 7px 14px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+.cb-lang { font-size: 11.5px; color: var(--muted); font-family: 'SF Mono', Consolas, monospace; }
+.cb pre { padding: 16px; overflow-x: auto; font-family: 'SF Mono','Cascadia Code','Fira Code',Consolas,monospace; font-size: 13px; line-height: 1.65; tab-size: 2; }
+.cb code { color: var(--text); }
+
+/* Callouts */
+.callout { border-radius: 8px; padding: 14px 18px; margin: 20px 0; border-left: 3px solid; }
+.callout-title { font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 7px; }
+.callout p { margin: 0; font-size: 14px; line-height: 1.65; }
+.callout a { color: inherit; text-decoration: underline; opacity: .85; }
+.callout.info { background: rgba(91,156,246,.07); border-color: var(--blue); }
+.callout.info .callout-title { color: var(--blue); }
+.callout.tip { background: rgba(74,222,128,.07); border-color: var(--green); }
+.callout.tip .callout-title { color: var(--green); }
+.callout.warn { background: rgba(251,191,36,.07); border-color: var(--yellow); }
+.callout.warn .callout-title { color: var(--yellow); }
+
+/* Mermaid diagrams */
+.diagram { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 24px 16px; margin: 20px 0; overflow-x: auto; display: flex; justify-content: center; }
+.mermaid { max-width: 100%; }
+
+/* Table */
+table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13.5px; }
+th { background: var(--bg3); padding: 9px 14px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); border: 1px solid var(--border); }
+td { padding: 9px 14px; border: 1px solid var(--border); vertical-align: top; line-height: 1.55; }
+tr:nth-child(even) td { background: rgba(255,255,255,.018); }
+td code { font-size: 12px; }
+
+/* Badge */
+.badge { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: .03em; margin-left: 8px; vertical-align: middle; }
+.badge.sd { background: rgba(91,156,246,.15); color: var(--blue); }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+@media (max-width: 900px) {
+  #sidebar { display: none; }
+  #main { margin-left: 0; max-width: 100%; padding: 0 20px 80px; }
+  .hero h1 { font-size: 30px; }
+}
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+
+<aside id="sidebar">
+  <div class="sidebar-head">
+    <h1><a href="../../index.html">⬡ First Principles</a></h1>
+    <p>SWE concepts from the ground up</p>
+  </div>
+  <a class="sidebar-back" href="../../index.html">← All topics</a>
+  <nav>
+    <div class="nav-group">In This Article</div>
+    <a href="#why-cap">Why you can't use CAP casually</a>
+    <a href="#consistency">1. Consistency = Linearizability</a>
+    <a href="#availability">2. Availability</a>
+    <a href="#partition">3. Partition Tolerance</a>
+    <a href="#proof">The Proof</a>
+    <a href="#not-covered">What CAP Doesn't Cover</a>
+    <a href="#conclusion">Putting It Together</a>
+    <a href="#reading">Further Reading</a>
+  </nav>
+</aside>
+
+<main id="main">
+
+<div class="hero">
+  <div class="hero-tag">System Design</div>
+  <h1>No Cap: The Real <span>CAP Theorem</span></h1>
+  <p class="hero-sub">Why "our database is AP" is usually a category error — and what's actually true underneath it.</p>
+</div>
+
+<!-- Intro callout -->
+<div class="sec" style="margin-bottom:48px">
+  <div class="callout info">
+    <div class="callout-title">About this article</div>
+    <p>This is a first-principles walkthrough built on top of Martin Kleppmann's excellent 2015 post, <a href="https://martin.kleppmann.com/2015/05/11/please-stop-calling-databases-cp-or-ap.html"><em>Please stop calling databases CP or AP</em></a>. If you want the original, denser, and more authoritative version, read that. This is the version I wish existed when I first read it — no assumed background, lots of concrete examples, nothing hand-waved.</p>
+  </div>
+</div>
+
+<!-- WHY CAP -->
+<section class="sec" id="why-cap">
+  <h2>Why you can't use CAP casually <span class="badge sd">Foundation</span></h2>
+  <p>CAP is not a design philosophy or a marketing tagline. It's a mathematical proof, first stated informally by Eric Brewer and formally proven by <a href="https://www.comp.nus.edu.sg/~gilbert/pubs/BrewersConjecture-SigAct.pdf">Gilbert &amp; Lynch in 2002</a>. A proof only holds for the exact objects it defines. The moment you substitute your own intuitive meaning for "consistent" or "available," you're no longer citing the theorem — you're citing something you made up and borrowing the theorem's authority for it.</p>
+  <p>So step one, before anything else, is: use the proof's own definitions.</p>
+  <ul>
+    <li><strong>Consistency</strong> in CAP means <em>linearizability</em> — a specific, strong guarantee about recency. It has nothing to do with the C in ACID.</li>
+    <li><strong>Availability</strong> in CAP means <em>every non-failing node must answer every request it receives, without error</em>. Not "the system as a whole handles most traffic."</li>
+    <li><strong>Partition tolerance</strong> means the network can delay or drop messages arbitrarily. This isn't optional — it's just what real networks (the internet, your datacenter switches) actually do.</li>
+  </ul>
+  <p>Let's take these apart one at a time.</p>
+</section>
+
+<hr class="divider">
+
+<!-- CONSISTENCY -->
+<section class="sec" id="consistency">
+  <h2><span class="sec-num">1.</span> Consistency = Linearizability <em style="font-weight:400;color:var(--muted);font-size:18px">(not ACID's "C")</em></h2>
+
+  <p><strong>The definition, informally:</strong> if operation B starts <em>after</em> operation A has finished, B must see a state at least as recent as the state A left behind.</p>
+  <p>The critical phrase is "starts after A finished" — this is about real, wall-clock time, not about some abstract logical ordering the database gets to choose.</p>
+
+  <h3>A worked example</h3>
+  <ul>
+    <li><code>t=0</code>: Client 1 writes <code>x = 5</code>. The write finishes at <code>t=1</code>.</li>
+    <li><code>t=2</code>: Client 2 reads <code>x</code> (strictly after the write finished).</li>
+    <li><strong>Linearizability requires</strong> Client 2 to see <code>5</code>. Seeing the old value <code>0</code> is a violation, full stop — the write was already done, in real time, before the read even began.</li>
+  </ul>
+  <p>Now compare: if Client 2's read had started at <code>t=0.5</code> — <em>before</em> the write finished — then either <code>0</code> or <code>5</code> would be a legal answer. The two operations overlap in time, so there's no ordering fact to violate. Linearizability only constrains operations that don't overlap.</p>
+
+  <h3>The scenario that makes it click: Alice, Bob, and a football score</h3>
+  <p>Kleppmann's example (from the yet-unreleased chapter of <em>Designing Data-Intensive Applications</em>) is the clearest way to see this. Picture the diagram: a Referee inserts the final World Cup score into a Leader database. The Leader acknowledges the write, <em>then</em> asynchronously replicates it to two followers — Follower 1 gets the update quickly, Follower 2 lags behind.</p>
+  <ul>
+    <li>Alice queries Follower 1 (already replicated) → sees <code>Germany 1, Argentina 0</code>. She turns to Bob and says it out loud.</li>
+    <li>Bob, having <em>just heard Alice say it</em>, queries Follower 2 — but the replication message hasn't arrived there yet. He sees the game as still in progress.</li>
+  </ul>
+
+  <div class="diagram">
+    <pre class="mermaid">
+sequenceDiagram
+    participant Referee
+    participant Leader
+    participant Follower1 as Follower 1
+    participant Follower2 as Follower 2
+    participant Alice
+    participant Bob
+
+    Referee->>Leader: INSERT final_scores (Germany 1, Argentina 0)
+    Leader-->>Referee: ok (write completes here)
+    Leader->>Follower1: replicate (fast)
+    Alice->>Follower1: SELECT * FROM final_scores
+    Follower1-->>Alice: Germany 1, Argentina 0
+    Note over Alice,Bob: "Hey, Germany won the World Cup!"
+    Bob->>Follower2: SELECT * FROM final_scores
+    Follower2-->>Bob: still 0 - 0 (stale!) ❌
+    Leader->>Follower2: replicate (slow, arrives too late)
+    </pre>
+  </div>
+
+  <p>Bob's query started <em>after</em> Alice's finished — so it should have seen at least what she saw. It saw less. That gap between the two <code>replicate</code> arrows arriving at different times is the entire bug.</p>
+  <p>Formally: Bob's read started strictly after Alice's read completed (we know this because Bob's own action — asking, then querying — happened in response to hearing her). So Bob's read must return a state at least as new as what Alice saw. It doesn't. <strong>That's the violation.</strong></p>
+  <p>Notice what made this provable: Alice and Bob talked to each other. The database has no way of knowing about that side-channel. This is the crux of why linearizability is expensive to provide — a database can't ask "do these two clients happen to know each other?" It has to guarantee ordering <strong>for every possible side-channel it doesn't know about</strong>, which means, practically, it has to behave as though there's only one copy of the data, even when there are many replicas underneath.</p>
+
+  <h3>Why this is <em>not</em> ACID's "C"</h3>
+
+  <div class="diagram">
+    <pre class="mermaid">
+flowchart LR
+    W["the word 'Consistency'"] --> A["ACID's C\ndata invariants hold\ne.g. balance never negative"]
+    W --> B["CAP's C\n= Linearizability\nreads see the latest write"]
+    A -. no relation to .- B
+    </pre>
+  </div>
+
+  <p>ACID consistency is about invariants over your data — e.g., "an account balance is never negative," or "every order has a matching customer row." It's enforced by transactions and has nothing to say about <em>recency</em>.</p>
+  <p>Linearizability says nothing about invariants. It's purely about whether a read sees the latest write, in real time, for a single object. A database can be perfectly ACID-consistent (never violates a foreign key) while serving stale reads from a lagging replica (not linearizable) — and vice versa. These are two unrelated properties that happen to share the word "consistency."</p>
+
+  <h3>It's not even free inside a single CPU</h3>
+  <p>This isn't a database-specific quirk — it shows up any time you have multiple copies of state and asynchronous propagation between them, at <em>any</em> layer of a system. Modern CPUs use per-core store buffers: a <code>store x, 1</code> on core 0 can sit in that core's buffer, invisible to core 1, for a short window. Classic example:</p>
+
+  <div class="cb">
+    <div class="cb-head"><span class="cb-lang">CPU store buffer example</span></div>
+    <pre><code>Initially: x = 0, y = 0
+
+Core 0:            Core 1:
+store x, 1         store y, 1
+load  r1, y        load  r2, x</code></pre>
+  </div>
+
+  <div class="diagram">
+    <pre class="mermaid">
+sequenceDiagram
+    participant Core0
+    participant Buf0 as Store Buffer (Core 0)
+    participant Memory
+    participant Buf1 as Store Buffer (Core 1)
+    participant Core1
+
+    Core0->>Buf0: store x, 1 (buffered, not yet visible)
+    Core1->>Buf1: store y, 1 (buffered, not yet visible)
+    Core0->>Memory: load y
+    Memory-->>Core0: y = 0 (Core 1's store hasn't flushed)
+    Core1->>Memory: load x
+    Memory-->>Core1: x = 0 (Core 0's store hasn't flushed)
+    Note over Buf0,Buf1: Both stores eventually flush to memory — too late
+    </pre>
+  </div>
+
+  <p>On a truly linearizable machine, <code>r1 == 0 &amp;&amp; r2 == 0</code> should be impossible — one store must precede the other's load. On real x86/ARM hardware, without an explicit memory barrier (<code>mfence</code>, <code>dmb</code>), this outcome is observed in practice. The fix is structurally identical to the database fix: force the "replica" (the other core's cache) to catch up before a dependent operation is allowed to proceed. Same problem, same solution, completely different hardware layer.</p>
+</section>
+
+<hr class="divider">
+
+<!-- AVAILABILITY -->
+<section class="sec" id="availability">
+  <h2><span class="sec-num">2.</span> Availability = <em style="font-weight:400;color:var(--muted);font-size:18px">every</em> non-failing node, not <em style="font-weight:400;color:var(--muted);font-size:18px">some</em> node</h2>
+
+  <p><strong>The definition:</strong> every request that reaches a non-failing node must produce a non-error response. Not "the cluster, taken as a whole, answers most requests." Every non-failing node, individually.</p>
+
+  <h3>A worked example</h3>
+  <p>Take a 5-node Raft cluster. A network partition splits it 3-2. The minority side has a node, call it <code>N4</code>, that is completely healthy — CPU fine, disk fine, process running. But it can't reach a quorum, so per the protocol it refuses writes (returns an error or times out).</p>
+
+  <div class="diagram">
+    <pre class="mermaid">
+flowchart TB
+    subgraph Majority["Majority side — 3 nodes, has quorum"]
+        N1((N1))
+        N2((N2))
+        N3((N3))
+    end
+    subgraph Minority["Minority side — 2 nodes, no quorum"]
+        N4((N4 — healthy))
+        N5((N5 — healthy))
+    end
+    Majority ===|"⚡ network partition"| Minority
+    Client["Client request"] --> N4
+    N4 -->|"can't reach quorum"| Err["❌ error / timeout\n= not CAP-available"]
+    </pre>
+  </div>
+
+  <p><code>N4</code> has not crashed. It received a request. It returned an error. By CAP's definition, <strong>this system is not available</strong>, full stop — regardless of how well the majority side is doing.</p>
+
+  <h3>Why "high availability" in marketing usually isn't this</h3>
+  <p>"Our API had 99.99% uptime last quarter" is an <em>aggregate</em>, measured against traffic that a load balancer already routed to healthy nodes. If the load balancer simply stops sending requests to <code>N4</code> during the partition, that doesn't fix the CAP-availability violation — it just hides it, because <code>N4</code> never gets asked. CAP's definition is deliberately adversarial: it asks whether <em>every individual node</em> can answer if asked, not whether your routing layer is clever enough to avoid asking the wrong one.</p>
+
+  <h3>Availability also says nothing about speed</h3>
+  <p>CAP's availability only requires a non-error response <em>in finite time</em> — there's no upper bound. A system that takes 90 seconds to respond during a network hiccup, but eventually returns a correct answer, is technically "CAP-available." A user staring at a spinner for 90 seconds will not agree that the system was "available." This gap — CAP's total silence on latency — is exactly what motivated Daniel Abadi's extension, <strong>PACELC</strong>: <em>if Partitioned, choose Availability or Consistency; Else, choose Latency or Consistency.</em> The "Else" branch captures a tradeoff that exists <strong>even when the network is perfectly healthy</strong>, which CAP has nothing to say about.</p>
+</section>
+
+<hr class="divider">
+
+<!-- PARTITION TOLERANCE -->
+<section class="sec" id="partition">
+  <h2><span class="sec-num">3.</span> Partition tolerance = the network is asynchronous <em style="font-weight:400;color:var(--muted);font-size:18px">(you don't get a choice)</em></h2>
+
+  <p><strong>The definition:</strong> the network can delay, drop, or reorder messages arbitrarily, and a node cannot reliably distinguish "the message is late," "the message is lost," and "the other node has crashed."</p>
+  <p>This isn't a feature you opt into. It's an honest description of TCP/IP over the internet or across datacenters. Consider four scenarios, all indistinguishable from the receiving node's point of view:</p>
+  <ul>
+    <li>A cross-region fiber link is physically cut for 90 seconds.</li>
+    <li>A node hits a long garbage-collection pause and can't respond for several seconds.</li>
+    <li>A switch drops packets under load, triggering TCP retransmits and latency spikes.</li>
+    <li>A node has genuinely crashed and will never respond again.</li>
+  </ul>
+
+  <div class="diagram">
+    <pre class="mermaid">
+flowchart LR
+    A["Fiber link physically cut"] --> X["Silence,\nunknown duration"]
+    B["Node stuck in a long GC pause"] --> X
+    C["Switch dropping packets under load"] --> X
+    D["Node has actually crashed"] --> X
+    X --> Q["Receiver cannot tell which one it is"]
+    </pre>
+  </div>
+
+  <p>From the outside, all four look identical: <em>silence, for an unknown duration</em>. There is no timeout value that reliably tells these apart — this ambiguity is a fundamental fact about asynchronous networks (related to the <a href="http://cs-www.cs.yale.edu/homes/aspnes/pinewiki/FLP.html">FLP impossibility result</a>), not an engineering gap waiting to be closed. So "tolerating partitions" isn't a design decision — it's an acknowledgment of reality.</p>
+</section>
+
+<hr class="divider">
+
+<!-- THE PROOF -->
+<section class="sec" id="proof">
+  <h2>The proof, compressed to five lines</h2>
+
+  <p>Two nodes, <code>G1</code> and <code>G2</code>, sit on opposite sides of a partition — no messages can cross.</p>
+  <ol>
+    <li>A client writes <code>x = 1</code> to <code>G1</code>. It completes.</li>
+    <li>Later (in real time), a different client reads <code>x</code> from <code>G2</code>.</li>
+    <li><code>G2</code> has not heard about the write — it can't have, the partition blocks every message.</li>
+    <li><code>G2</code> now has exactly two moves:
+      <ul>
+        <li>Answer with its stale local value → <strong>violates linearizability</strong> (the read started after the write completed, but returned an older state).</li>
+        <li>Refuse to answer until it can confirm with <code>G1</code> → <strong>violates availability</strong> (a non-failing node failed to give a non-error response).</li>
+      </ul>
+    </li>
+    <li>There is no third option, because the network genuinely will not deliver the message during the partition.</li>
+  </ol>
+
+  <div class="diagram">
+    <pre class="mermaid">
+sequenceDiagram
+    participant Client1 as Client 1
+    participant G1
+    participant G2
+    participant Client2 as Client 2
+
+    Client1->>G1: write(x, 1)
+    G1-->>Client1: ok
+    Note over G1,G2: ⚡ Network partition — no messages can cross
+    Client2->>G2: read(x)
+    alt Answer anyway
+        G2-->>Client2: x = 0 (stale) ❌ breaks Linearizability
+    else Refuse to answer
+        G2-->>Client2: error / timeout ❌ breaks Availability
+    end
+    </pre>
+  </div>
+
+  <p>That's the whole theorem. Two datacenters make this concrete: DC1 and DC2 replicate a database between them; the replication link goes down. Either both datacenters keep accepting writes and diverge (giving up linearizability — this is exactly the multi-leader conflict problem, resolved via last-writer-wins, CRDTs, or Dynamo-style version vectors), or the non-leader datacenter stops answering requests entirely until the link heals (giving up availability). CAP's proof gives you no third option, and the two-datacenter picture makes it obvious why: it's the abstract <code>G1</code>/<code>G2</code> argument, just with a physical shape.</p>
+
+  <div class="diagram">
+    <pre class="mermaid">
+flowchart TD
+    Start["Replication link between DC1 and DC2 breaks"]
+    Start --> Opt1["Option 1: both DCs keep accepting writes"]
+    Start --> Opt2["Option 2: only DC1 (leader) accepts writes"]
+    Opt1 --> R1["Data diverges → violates Linearizability\nreconcile later: LWW / CRDTs / version vectors"]
+    Opt2 --> R2["DC2 refuses requests → violates Availability\nhealthy node, but won't answer"]
+    </pre>
+  </div>
+
+  <p>One subtlety worth sitting with: choosing "unavailable" for the minority side doesn't necessarily mean an outage for your users. If a load balancer detects the partition and reroutes <em>all</em> traffic — including the minority datacenter's own users — to the majority side, the application can stay fully up with zero perceived downtime, even though, strictly by CAP's definition, one datacenter's database was "unavailable" the entire time. CAP-availability is a per-node correctness property; the availability your users and your SLA actually care about is an aggregate, latency-bounded, business-level metric. The two frequently disagree.</p>
+</section>
+
+<hr class="divider">
+
+<!-- WHAT CAP DOESN'T COVER -->
+<section class="sec" id="not-covered">
+  <h2>What CAP does <em>not</em> cover <em style="font-weight:400;color:var(--muted);font-size:18px">(and this is most of what actually matters)</em></h2>
+
+  <p>CAP's proof is precise, and that precision comes at the cost of scope. Three specific restrictions:</p>
+
+  <p><strong>1. It's about a single register — nothing more.</strong> The proof's entire universe is one key holding one value, with <code>read()</code> and <code>write()</code>. A transaction touching two objects (e.g., transferring money between <code>balance[A]</code> and <code>balance[B]</code>) is simply outside the theorem. CAP says nothing about it — not whether it's possible, not what the tradeoffs are. That question needs entirely separate machinery (two-phase commit, distributed transaction protocols), with its own definitions of consistency built from scratch.</p>
+
+  <p><strong>2. The only fault it models is a network partition.</strong> Nodes never crash, disks never fill up, software never has bugs — in CAP's world, the <em>only</em> thing that goes wrong is messages between healthy nodes getting delayed or dropped. A node getting OOM-killed, a disk hitting <code>ENOSPC</code>, a replication bug silently corrupting data, a compromised node returning garbage (Byzantine faults) — none of these are covered. Building on CAP alone as your fault model means you've reasoned about one axis of failure and skipped the rest.</p>
+
+  <p><strong>3. It says nothing about latency.</strong> As noted above, a system that takes two minutes to respond during a network blip is, mathematically, "CAP-available." Most real outages and most user complaints are about <em>slow</em>, not <em>erroring</em> — and CAP is structurally incapable of describing that distinction.</p>
+</section>
+
+<hr class="divider">
+
+<!-- PUTTING IT TOGETHER -->
+<section class="sec" id="conclusion">
+  <h2>Putting it together</h2>
+
+  <p>CAP is a genuinely useful, genuinely precise result — about one register, one fault type, and a binary error/non-error outcome. That narrowness is <em>why the proof is valid</em>. But it also means that when someone says "our database is AP" as a blanket description of its behavior, they're usually smuggling in claims the theorem was never built to make: claims about multi-object transactions, about crash and disk faults, about latency under normal operation. All of that lives outside CAP entirely, and needs its own reasoning.</p>
+
+  <p>The honest, useful question is never "is this system CP or AP?" It's: <em>what does this specific system do, to this specific piece of data, during this specific kind of partition</em> — and separately, what does it do about node crashes, disk failures, and latency, none of which CAP will help you with. That's a much longer conversation, but it's the conversation that actually matters when you're picking or building a distributed system.</p>
+</section>
+
+<hr class="divider">
+
+<!-- FURTHER READING -->
+<section class="sec" id="reading">
+  <h2>Further reading</h2>
+  <ul>
+    <li>Martin Kleppmann, <a href="https://martin.kleppmann.com/2015/05/11/please-stop-calling-databases-cp-or-ap.html"><em>Please stop calling databases CP or AP</em></a> — the source for this article.</li>
+    <li>Gilbert &amp; Lynch, <a href="https://www.comp.nus.edu.sg/~gilbert/pubs/BrewersConjecture-SigAct.pdf"><em>Brewer's Conjecture and the Feasibility of Consistent, Available, Partition-Tolerant Web Services</em></a> — the formal proof.</li>
+    <li>Herlihy &amp; Wing, <a href="http://cs.brown.edu/~mph/HerlihyW90/p463-herlihy.pdf"><em>Linearizability: A Correctness Condition for Concurrent Objects</em></a> — the formal definition CAP's "C" borrows.</li>
+    <li>Kyle Kingsbury (aphyr), <a href="https://aphyr.com/posts/288-the-network-is-reliable"><em>The Network is Reliable</em></a> — real-world evidence that partitions genuinely happen.</li>
+    <li>Daniel Abadi, <a href="http://dbmsmusings.blogspot.co.uk/2010/04/problems-with-cap-and-yahoos-little.html"><em>Problems with CAP, and Yahoo's little known NoSQL system</em></a> — the paper introducing PACELC.</li>
+  </ul>
+</section>
+
+<div style="border-top:1px solid var(--border);margin-top:40px;padding:40px 0;max-width:860px;text-align:center">
+  <p style="color:var(--muted);font-size:14px">First Principles &mdash; Software engineering, rebuilt from the constraints up.</p>
+  <p style="margin-top:10px"><a href="../../index.html" style="font-size:13px;color:var(--blue)">← Back to all topics</a></p>
+</div>
+
+</main>
+
+<!-- Mermaid -->
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+mermaid.initialize({
+  startOnLoad: true,
+  theme: 'dark',
+  themeVariables: {
+    darkMode: true,
+    background: '#13151f',
+    mainBkg: '#1a1d2b',
+    nodeBorder: '#2a2d3e',
+    lineColor: '#6b7280',
+    primaryColor: '#1a1d2b',
+    primaryTextColor: '#dde1f0',
+    primaryBorderColor: '#2a2d3e',
+    secondaryColor: '#202333',
+    tertiaryColor: '#13151f',
+    edgeLabelBackground: '#13151f',
+    sequenceNumberColor: '#dde1f0',
+    actorBkg: '#1a1d2b',
+    actorBorder: '#5b9cf6',
+    actorTextColor: '#dde1f0',
+    actorLineColor: '#2a2d3e',
+    signalColor: '#6b7280',
+    signalTextColor: '#dde1f0',
+    noteBkgColor: '#202333',
+    noteTextColor: '#dde1f0',
+    noteBorderColor: '#2a2d3e',
+    activationBorderColor: '#5b9cf6',
+    activationBkgColor: '#1a1d2b',
+    labelBoxBkgColor: '#1a1d2b',
+    labelBoxBorderColor: '#2a2d3e',
+    labelTextColor: '#dde1f0',
+    loopTextColor: '#dde1f0',
+    altSectionBkgColor: 'transparent',
+    altSectionBkgColor2: 'transparent',
+  }
+});
+
+// Progress bar
+const progress = document.getElementById('progress');
+window.addEventListener('scroll', () => {
+  const pct = (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100;
+  progress.style.width = pct + '%';
+
+  // Scroll spy
+  const sections = document.querySelectorAll('.sec[id]');
+  const links = document.querySelectorAll('#sidebar nav a');
+  let active = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 100) active = s.id;
+  });
+  links.forEach(l => {
+    l.classList.toggle('active', l.getAttribute('href') === '#' + active);
+  });
+});
+</script>
+
+</body>
+</html>
